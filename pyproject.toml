@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aurora-core"
+version = "0.0.1"
+description = "Production-grade MLOps control plane for AI deployments"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "Apache-2.0"}
+authors = [{name = "Edwin Jonathan", email = "edwinjdevops@gmail.com"}]
+
+dependencies = [
+  "fastapi>=0.104.1",
+  "uvicorn[standard]>=0.24.0",
+  "pydantic>=2.5.0",
+  "pydantic-settings>=2.1.0",
+  "python-dotenv>=1.0.0",
+  "PyYAML>=6.0",
+  "PyGithub>=2.1.0",
+  "kubernetes>=28.0.0",
+  "psycopg[binary]>=3.1.0",
+  "SQLAlchemy>=2.0.0",
+  "opentelemetry-api>=1.21.0",
+  "opentelemetry-sdk>=1.21.0",
+  "opentelemetry-exporter-prometheus>=0.42b0",
+  "opentelemetry-exporter-jaeger>=1.21.0",
+  "opentelemetry-instrumentation-fastapi>=0.42b0",
+  "opentelemetry-instrumentation-sqlalchemy>=0.42b0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.4.0",
+  "pytest-cov>=4.1.0",
+  "pytest-asyncio>=0.21.0",
+  "black>=23.11.0",
+  "ruff>=0.1.8",
+  "mypy>=1.7.0",
+  "bandit>=1.7.5",
+  "safety>=2.3.5",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.pytest.ini_options]
+minversion = "7.4"
+addopts = "-v --cov=src --cov-report=term-missing:skip-covered"
+testpaths = ["tests"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+select = ["E", "F", "W", "I", "N", "UP", "S", "B", "C4"]

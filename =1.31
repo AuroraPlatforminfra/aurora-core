@@ -1,0 +1,7 @@
+Requirement already satisfied: pip in ./.venv/lib/python3.12/site-packages (26.2)
+Requirement already satisfied: setuptools in ./.venv/lib/python3.12/site-packages (83.0.0)
+Requirement already satisfied: hatchling in ./.venv/lib/python3.12/site-packages (1.31.0)
+Requirement already satisfied: packaging>=24.2 in ./.venv/lib/python3.12/site-packages (from hatchling) (26.2)
+Requirement already satisfied: pathspec>=0.10.1 in ./.venv/lib/python3.12/site-packages (from hatchling) (1.1.1)
+Requirement already satisfied: pluggy>=1.0.0 in ./.venv/lib/python3.12/site-packages (from hatchling) (1.6.0)
+Requirement already satisfied: trove-classifiers in ./.venv/lib/python3.12/site-packages (from hatchling) (2026.6.1.19)
