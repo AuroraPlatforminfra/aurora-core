@@ -34,12 +34,22 @@ def test_validate_endpoint(client):
 
 
 def test_drift_endpoint(client):
-    response = client.post("/v1/detect-drift", json={"config": {}})
+    response = client.post(
+        "/v1/detect-drift",
+        json={"current_manifest": {}, "desired_manifest": {}}
+    )
     assert response.status_code == 200
-    assert "drift_detected" in response.json()
+    assert "drift_id" in response.json()
 
 
 def test_remediate_endpoint(client):
-    response = client.post("/v1/remediate", json={"drift_report": {}})
+    response = client.post(
+        "/v1/remediate",
+        json={
+            "drift_report": {},
+            "desired_manifest": {},
+            "repo_url": "https://github.com/test/repo"
+        }
+    )
     assert response.status_code == 200
     assert "remediation_id" in response.json()
