@@ -1,0 +1,12 @@
+__pycache__
+.venv
+venv
+.git
+.pytest_cache
+.coverage
+htmlcov
+*.egg-info
+.DS_Store
+.env
+.terraform
+node_modules

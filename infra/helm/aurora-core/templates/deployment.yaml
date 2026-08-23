@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aurora-core.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: aurora-core
+  template:
+    metadata:
+      labels:
+        app: aurora-core
+    spec:
+      containers:
+      - name: aurora-core
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.service.port }}
+        - name: metrics
+          containerPort: {{ .Values.service.metricsPort }}
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: aurora-db
+              key: url
+        resources: {{- toYaml .Values.resources | nindent 10 }}

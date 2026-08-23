@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aurora-core
+  namespace: aurora
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aurora-core
+  template:
+    metadata:
+      labels:
+        app: aurora-core
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: aurora-core
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsReadOnlyRootFilesystem: true
+      containers:
+      - name: aurora-core
+        image: gcr.io/aurora-mlops-dev/aurora-core:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8000
+        - name: metrics
+          containerPort: 8001
+        env:
+        - name: DEBUG
+          value: "false"
+        - name: OTEL_ENABLED
+          value: "true"
+        - name: OTEL_JAEGER_AGENT_HOST
+          value: "jaeger-agent"
+        - name: OTEL_JAEGER_AGENT_PORT
+          value: "6831"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: aurora-db
+              key: url
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: aurora-github
+              key: token
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - aurora-core
+              topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aurora-core
+  namespace: aurora
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: http
+    name: http
+  - port: 8001
+    targetPort: metrics
+    name: metrics
+  selector:
+    app: aurora-core
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aurora-core
+  namespace: aurora
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: aurora-core
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["aurora.sh"]
+  resources: ["auroravalidations"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: aurora-core
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aurora-core
+subjects:
+- kind: ServiceAccount
+  name: aurora-core
+  namespace: aurora
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: aurora-core
+  namespace: aurora
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: aurora-core

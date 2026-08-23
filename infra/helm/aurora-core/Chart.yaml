@@ -1,0 +1,9 @@
+apiVersion: v2
+name: aurora-core
+description: Production MLOps control plane
+type: application
+version: 0.0.1
+appVersion: "0.0.1"
+maintainers:
+  - name: Aurora Team
+    email: team@aurora.sh

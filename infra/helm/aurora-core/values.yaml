@@ -1,0 +1,45 @@
+replicaCount: 3
+
+image:
+  repository: gcr.io/aurora-mlops-dev/aurora-core
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8000
+  metricsPort: 8001
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+ingress:
+  enabled: false
+
+database:
+  host: localhost
+  name: aurora
+  user: aurora
+
+github:
+  org: Aurora-platforminfra 
+
+observability:
+  prometheus:
+    enabled: true
+    scrapeInterval: 5s
+  jaeger:
+    enabled: true
+    agentHost: jaeger-agent
+    agentPort: 6831
